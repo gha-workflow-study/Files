@@ -14,10 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get PR author
-        id: pr_author
+      - name: Get PR branch info
+        id: pr_branch
         run: |
-          echo "pr_author=$(jq -r .pull_request.user.login < $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
+          echo "pr_head_repo=$(jq -r .pull_request.head.repo.full_name < $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
+          echo "pr_base_repo=$(jq -r .pull_request.base.repo.full_name < $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
 
 
       - name: List changed files under Strings (including subfolders)
@@ -36,7 +37,7 @@ jobs:
           echo "count=$count" >> $GITHUB_OUTPUT
 
       - name: Comment on PR if needed
-        if: steps.detect.outputs.count != '0' && steps.pr_author.outputs.pr_author != 'crowdin[bot]'
+        if: steps.detect.outputs.count != '0' && steps.pr_branch.outputs.pr_head_repo == steps.pr_branch.outputs.pr_base_repo
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
